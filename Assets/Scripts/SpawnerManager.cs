@@ -4,18 +4,16 @@ using UnityEngine;
 
 public class SpawnerManager : MonoBehaviour
 {
-    public ShapeManager[] allShapes;
-    public ShapeManager createdObjectForPivot;
-
-    void Start()
-    {
-        createShape();
-    }
+    [SerializeField] ShapeManager[] allShapes;
+    
+    
+    
     public ShapeManager createShape()
     {
+        // we choose a shape from allShapes array randomly
         int index = Random.Range(0, allShapes.Length);
         ShapeManager shape = Instantiate(allShapes[index],transform.position,Quaternion.identity) as ShapeManager;
-        createdObjectForPivot.setPivot(shape);
+       
         
         if (shape)
         {
