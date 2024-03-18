@@ -105,6 +105,7 @@ public class GameManager : MonoBehaviour
         {
             currentShape = spawnerManager.createShape();
         }
+        boardManager.deleleAllRows();
     }
 
     //making value integer if it is float value

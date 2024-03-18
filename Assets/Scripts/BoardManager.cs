@@ -1,4 +1,5 @@
 
+using System;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -20,6 +21,7 @@ public class BoardManager : MonoBehaviour
     {
         createEmptySquare();
     }
+    
 
     bool insideBoard(int x, int y)
     {
@@ -83,12 +85,78 @@ public class BoardManager : MonoBehaviour
             grid[(int)position.x, (int)position.y] = child;
         }
     }
+
+    bool isCompletedRow(int y)
+    {
+        for (int x = 0; x < wide; ++x)
+        {
+            // travel all points of row one by one, if any point is null, return false
+            if (grid[x, y] == null)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void deleteRow(int y)
+    {
+        for (int x = 0; x < wide; ++x)
+        {
+            //travel all points of row one by one, if the row is full, destroy the row
+            if (grid[x,y]!=null)
+            {
+                Destroy(grid[x,y].gameObject);
+            }
+            grid[x, y] = null;
+        }
+    }
+    
+    void moveDownOneRow(int y)
+    {
+        for (int x = 0; x < wide; ++x)
+        {
+            if (grid[x, y] != null && y - 1 >= 0 && grid[x, y - 1] == null)
+            {
+                grid[x, y - 1] = grid[x, y];
+                grid[x, y] = null;
+                if (grid[x, y - 1] != null)
+                {
+                    grid[x, y - 1].position += Vector3.down;
+                }
+            }
+        }
+    }
+
+
+    void moveAllRowsDown(int startY)
+    {
+        for (int i = startY; i < high; ++i)
+        {
+            moveDownOneRow(i);
+        }
+    }
+
+    public void deleleAllRows()
+    {
+        for (int y = 0; y < high; y++)
+        {
+            if (isCompletedRow(y))
+            {
+                deleteRow(y);// if the row is full, delete it and upper row moves down
+                moveAllRowsDown(y+1);
+                y--;
+            }
+        }
+    }
     
     //making value integer if it is float value
     Vector2 makeInteger(Vector2 vector)
     {
         return new Vector2(Mathf.Round(vector.x), Mathf.Round(vector.y));
     }
+    
+    
    
     
 }
