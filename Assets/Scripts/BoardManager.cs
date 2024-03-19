@@ -149,6 +149,19 @@ public class BoardManager : MonoBehaviour
             }
         }
     }
+
+    public bool outFromScene(ShapeManager shape)
+    {
+        foreach (Transform child in shape.transform)
+        {
+            if (child.transform.position.y>=high-1)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
     
     //making value integer if it is float value
     Vector2 makeInteger(Vector2 vector)

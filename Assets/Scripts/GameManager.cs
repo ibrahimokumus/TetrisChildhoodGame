@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
      [Range(0.01f,1f)]
      [SerializeField] private float pressingDownButtonTime = 0.25f;
      private float pressingDownButtonCounter;
+
+     private bool isGameOver = false;
     void Start()
     {
         spawnerManager = GameObject.FindObjectOfType<SpawnerManager>();
@@ -37,7 +39,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (!boardManager || !spawnerManager || !currentShape)
+        if (!boardManager || !spawnerManager || !currentShape || isGameOver)
         {
             return;
         }
@@ -71,7 +73,7 @@ public class GameManager : MonoBehaviour
             rightLeftTurnCounter = Time.time + rightLeftTurnTime;
             if (!boardManager.validPosition(currentShape))
             {
-                currentShape.rightMovement();
+                currentShape.leftMovement();
             }
             
         }else if (Input.GetKey("down") && Time.time > pressingDownButtonCounter || Time.time>movingDownCounter)
@@ -84,7 +86,16 @@ public class GameManager : MonoBehaviour
 
                 if (!boardManager.validPosition(currentShape))
                 {
-                    locateShape();
+                    if (boardManager.outFromScene(currentShape))
+                    {
+                        currentShape.upMovement();
+                        isGameOver = true;
+                    }
+                    else
+                    {
+                        locateShape();
+                    }
+                   
                 }
             }
             
