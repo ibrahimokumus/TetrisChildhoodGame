@@ -1,5 +1,4 @@
 
-using System;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -9,6 +8,7 @@ public class BoardManager : MonoBehaviour
 
     public int high =22;
     public int wide = 10;
+    public int completedLineCounter = 0;
 
     private Transform[,] grid;
 
@@ -139,10 +139,12 @@ public class BoardManager : MonoBehaviour
 
     public void deleleAllRows()
     {
+        completedLineCounter = 0;
         for (int y = 0; y < high; y++)
         {
             if (isCompletedRow(y))
             {
+                completedLineCounter++;
                 deleteRow(y);// if the row is full, delete it and upper row moves down
                 moveAllRowsDown(y+1);
                 y--;

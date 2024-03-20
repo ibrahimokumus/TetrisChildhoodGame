@@ -21,7 +21,11 @@ public class GameManager : MonoBehaviour
      [SerializeField] private float pressingDownButtonTime = 0.25f;
      private float pressingDownButtonCounter;
 
-     private bool isGameOver = false;
+     public bool isGameOver = false;
+
+     public bool isRightDirection = true;
+     public IconTurnOnOff rotateIcon;
+     
     void Start()
     {
         spawnerManager = GameObject.FindObjectOfType<SpawnerManager>();
@@ -55,7 +59,12 @@ public class GameManager : MonoBehaviour
             rightLeftClickCounter = Time.time + rightLeftClickTime;
             if (!boardManager.validPosition(currentShape))
             {
+                SoundManager.instance.makeSoundEffect(1);
                 currentShape.leftMovement();
+            }
+            else
+            {
+                SoundManager.instance.makeSoundEffect(2);
             }
             
         }else if (Input.GetKeyDown("left") || (Input.GetKey("left") && Time.time > rightLeftClickCounter))
@@ -64,7 +73,12 @@ public class GameManager : MonoBehaviour
             rightLeftClickCounter = Time.time + rightLeftClickTime;
             if (!boardManager.validPosition(currentShape))
             {
+                SoundManager.instance.makeSoundEffect(1);
                 currentShape.rightMovement();
+            }
+            else
+            {
+                SoundManager.instance.makeSoundEffect(2);
             }
             
         }else if (Input.GetKey("up") && Time.time > rightLeftTurnCounter)
@@ -73,7 +87,17 @@ public class GameManager : MonoBehaviour
             rightLeftTurnCounter = Time.time + rightLeftTurnTime;
             if (!boardManager.validPosition(currentShape))
             {
+                SoundManager.instance.makeSoundEffect(1);
                 currentShape.leftMovement();
+            }
+            else
+            {
+                isRightDirection = !isRightDirection;
+                if (rotateIcon)
+                {
+                    rotateIcon.chooseIcon(isRightDirection);
+                }
+                SoundManager.instance.makeSoundEffect(2);
             }
             
         }else if (Input.GetKey("down") && Time.time > pressingDownButtonCounter || Time.time>movingDownCounter)
@@ -90,6 +114,7 @@ public class GameManager : MonoBehaviour
                     {
                         currentShape.upMovement();
                         isGameOver = true;
+                        SoundManager.instance.makeSoundEffect(5);
                     }
                     else
                     {
@@ -112,13 +137,41 @@ public class GameManager : MonoBehaviour
         
         currentShape.upMovement();
         boardManager.takeShapeInsideGrid(currentShape);
+        SoundManager.instance.makeSoundEffect(4);
         if (spawnerManager)
         {
             currentShape = spawnerManager.createShape();
         }
         boardManager.deleleAllRows();
+        if (boardManager.completedLineCounter > 0)
+        {
+            if (boardManager.completedLineCounter > 1)
+            {
+                SoundManager.instance.makeVocalSound();
+            }
+            SoundManager.instance.makeSoundEffect(4);
+        }
     }
 
+    public void rotateIconDirection()
+    {
+        isRightDirection = !isRightDirection;
+        currentShape.rotateRightDirection(isRightDirection);
+
+        if (!boardManager.validPosition(currentShape))
+        {
+            currentShape.rotateRightDirection(!isRightDirection);
+            SoundManager.instance.makeSoundEffect(2);
+        }
+        else
+        {
+            if (rotateIcon)
+            {
+                rotateIcon.chooseIcon(isRightDirection);
+            }
+            SoundManager.instance.makeSoundEffect(2);
+        }
+    }
     //making value integer if it is float value
     Vector2 makeInteger(Vector2 vector)
     {

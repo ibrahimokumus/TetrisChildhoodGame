@@ -1,6 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
 
 public class ShapeManager : MonoBehaviour
@@ -44,7 +42,18 @@ public class ShapeManager : MonoBehaviour
       }
    }
 
-  
+
+   public void rotateRightDirection(bool isRightDirection)
+   {
+      if (isRightDirection)
+      {
+         rightRotation();
+      }
+      else
+      {
+         leftRotation();
+      }
+   }
    
   
 
