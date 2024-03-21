@@ -25,6 +25,8 @@ public class GameManager : MonoBehaviour
 
      public bool isRightDirection = true;
      public IconTurnOnOff rotateIcon;
+
+     public GameObject gameOverPanel;
      
     void Start()
     {
@@ -38,6 +40,11 @@ public class GameManager : MonoBehaviour
                 currentShape = spawnerManager.createShape();
                 currentShape.transform.position = makeInteger(currentShape.transform.position);
             }
+        }
+
+        if (gameOverPanel)
+        {
+            gameOverPanel.SetActive(false);
         }
     }
 
@@ -114,6 +121,10 @@ public class GameManager : MonoBehaviour
                     {
                         currentShape.upMovement();
                         isGameOver = true;
+                        if (gameOverPanel)
+                        {
+                            gameOverPanel.SetActive(true);
+                        }
                         SoundManager.instance.makeSoundEffect(5);
                     }
                     else
@@ -161,7 +172,7 @@ public class GameManager : MonoBehaviour
         if (!boardManager.validPosition(currentShape))
         {
             currentShape.rotateRightDirection(!isRightDirection);
-            SoundManager.instance.makeSoundEffect(2);
+            SoundManager.instance.makeSoundEffect(1);
         }
         else
         {
