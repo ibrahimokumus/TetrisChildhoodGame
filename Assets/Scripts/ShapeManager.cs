@@ -5,8 +5,8 @@ public class ShapeManager : MonoBehaviour
 {
    [SerializeField] private bool isRotatable = true;
    
-   private Vector3 originalPosition;
-   
+  // private Vector3 originalPosition;
+  public Sprite shapeSprite;
     
    public void rightMovement()
    {

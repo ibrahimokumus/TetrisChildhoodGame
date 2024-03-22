@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
      [Header("Counters")]
      [Range(0.01f,1f)]
      [SerializeField] private float movingDownTime = 0.5f;
+     private float movingDownLevelCounter;
      private float movingDownCounter;
      [Range(0.01f,1f)]
      [SerializeField] private float rightLeftClickTime = 0.25f;
@@ -21,17 +22,20 @@ public class GameManager : MonoBehaviour
      [SerializeField] private float pressingDownButtonTime = 0.25f;
      private float pressingDownButtonCounter;
 
+    
      public bool isGameOver = false;
 
      public bool isRightDirection = true;
      public IconTurnOnOff rotateIcon;
 
      public GameObject gameOverPanel;
+     private ScoreManager scoreManager;
      
     void Start()
     {
         spawnerManager = GameObject.FindObjectOfType<SpawnerManager>();
         boardManager = GameObject.FindObjectOfType<BoardManager>();
+        scoreManager = GameObject.FindObjectOfType<ScoreManager>();
 
         if (spawnerManager)
         {
@@ -46,11 +50,13 @@ public class GameManager : MonoBehaviour
         {
             gameOverPanel.SetActive(false);
         }
+
+        movingDownLevelCounter = movingDownTime;
     }
 
     private void Update()
     {
-        if (!boardManager || !spawnerManager || !currentShape || isGameOver)
+        if (!boardManager || !spawnerManager || !currentShape || isGameOver || !scoreManager)
         {
             return;
         }
@@ -107,9 +113,9 @@ public class GameManager : MonoBehaviour
                 SoundManager.instance.makeSoundEffect(2);
             }
             
-        }else if (Input.GetKey("down") && Time.time > pressingDownButtonCounter || Time.time>movingDownCounter)
+        }else if ((Input.GetKey("down") && Time.time > pressingDownButtonCounter) || Time.time>movingDownCounter)
         {
-            movingDownCounter = Time.time + movingDownTime;
+            movingDownCounter = Time.time + movingDownLevelCounter;
             pressingDownButtonCounter = Time.time + pressingDownButtonTime; 
             if (currentShape)
             {
@@ -156,10 +162,21 @@ public class GameManager : MonoBehaviour
         boardManager.deleleAllRows();
         if (boardManager.completedLineCounter > 0)
         {
-            if (boardManager.completedLineCounter > 1)
+            scoreManager.rowScore(boardManager.completedLineCounter);
+            if (scoreManager.isPassedLevel)
             {
-                SoundManager.instance.makeVocalSound();
+                SoundManager.instance.makeSoundEffect(6);
+                //decreasing movingDownTime depends on level. 
+                movingDownLevelCounter = movingDownTime - Mathf.Clamp(((float)scoreManager.level - 1) * 0.1f, 0.05f, 1f);
             }
+            else
+            {
+                if (boardManager.completedLineCounter > 1)
+                {
+                    SoundManager.instance.makeVocalSound();
+                }
+            }
+            
             SoundManager.instance.makeSoundEffect(4);
         }
     }

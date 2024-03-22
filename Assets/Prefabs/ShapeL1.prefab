@@ -385,3 +385,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isRotatable: 1
+  shapeSprite: {fileID: 21300000, guid: 1da96de1291bf1b4f8fe0da204250163, type: 3}

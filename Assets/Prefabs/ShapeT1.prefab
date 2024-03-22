@@ -133,7 +133,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isRotatable: 1
-  pivot: {fileID: 0}
+  shapeSprite: {fileID: 21300000, guid: 54e6b84ab952ed5498e47f9cdf751b52, type: 3}
 --- !u!1 &4944339823628688141
 GameObject:
   m_ObjectHideFlags: 0

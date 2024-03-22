@@ -385,4 +385,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isRotatable: 1
-  pivot: {fileID: 0}
+  shapeSprite: {fileID: 21300000, guid: f0e93d8ea27347e48ace4ce041f81667, type: 3}
