@@ -1,4 +1,5 @@
 
+using System;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -30,15 +31,26 @@ public class GameManager : MonoBehaviour
 
      public GameObject gameOverPanel;
      private ScoreManager scoreManager;
-     
-    void Start()
+
+     private void Awake()
+     {
+         spawnerManager = GameObject.FindObjectOfType<SpawnerManager>();
+         boardManager = GameObject.FindObjectOfType<BoardManager>();
+         scoreManager = GameObject.FindObjectOfType<ScoreManager>();
+     }
+
+     private void Start()
+     {
+         startGame();
+     }
+
+     public void startGame()
     {
-        spawnerManager = GameObject.FindObjectOfType<SpawnerManager>();
-        boardManager = GameObject.FindObjectOfType<BoardManager>();
-        scoreManager = GameObject.FindObjectOfType<ScoreManager>();
+        
 
         if (spawnerManager)
         {
+            spawnerManager.makeNullAll();
             if (currentShape==null)
             {
                 currentShape = spawnerManager.createShape();

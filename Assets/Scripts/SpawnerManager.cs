@@ -12,7 +12,7 @@ public class SpawnerManager : MonoBehaviour
 
     private void Awake()
     {
-        makeNullAll();
+      //  makeNullAll();
     }
 
     public ShapeManager createShape()
@@ -70,7 +70,7 @@ public class SpawnerManager : MonoBehaviour
         }
     }
 
-    void makeNullAll()
+   public void makeNullAll()
     {
         for (int i = 0; i < orderShapes.Length; i++)
         {
