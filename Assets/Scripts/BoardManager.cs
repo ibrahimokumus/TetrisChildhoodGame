@@ -1,4 +1,5 @@
 
+using System.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -11,6 +12,9 @@ public class BoardManager : MonoBehaviour
     public int completedLineCounter = 0;
 
     private Transform[,] grid;
+
+    public ParticleEffectManager[] lineEffects = new ParticleEffectManager[4];
+    
 
     private void Awake()
     {
@@ -137,16 +141,27 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    public void deleleAllRows()
+    public IEnumerator deleleAllRows()
     {
         completedLineCounter = 0;
+        for (int y = 0; y < high; ++y)
+        {
+            if (isCompletedRow(y))
+            {
+                executeLineEffect(completedLineCounter,y);
+                completedLineCounter++;
+                
+            }
+        }
+
+        yield return new WaitForSeconds(0.5f);
         for (int y = 0; y < high; y++)
         {
             if (isCompletedRow(y))
             {
-                completedLineCounter++;
                 deleteRow(y);// if the row is full, delete it and upper row moves down
                 moveAllRowsDown(y+1);
+                yield return new WaitForSeconds(0.2f);
                 y--;
             }
         }
@@ -170,8 +185,21 @@ public class BoardManager : MonoBehaviour
     {
         return new Vector2(Mathf.Round(vector.x), Mathf.Round(vector.y));
     }
-    
-    
-   
+
+
+    void executeLineEffect(int totalCompletedLine,int y)
+    {
+        // if (lineEffect)
+        // {
+        //     lineEffect.transform.position = new Vector3(0, y, 0);
+        //     lineEffect.playEffect();
+        // }
+
+        if (lineEffects[totalCompletedLine])
+        {
+            lineEffects[totalCompletedLine].transform.position = new Vector3(0, y, 0);
+            lineEffects[totalCompletedLine].playEffect();
+        }
+    }
     
 }

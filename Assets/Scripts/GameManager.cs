@@ -1,5 +1,7 @@
 
 using System;
+using System.Collections;
+using DG.Tweening;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -32,6 +34,7 @@ public class GameManager : MonoBehaviour
      public GameObject gameOverPanel;
      private ScoreManager scoreManager;
 
+     public ParticleEffectManager[] levelUpEffects = new ParticleEffectManager[5];
      private void Awake()
      {
          spawnerManager = GameObject.FindObjectOfType<SpawnerManager>();
@@ -141,7 +144,9 @@ public class GameManager : MonoBehaviour
                         isGameOver = true;
                         if (gameOverPanel)
                         {
+                            gameOverPanel.transform.localScale=Vector3.zero;
                             gameOverPanel.SetActive(true);
+                            gameOverPanel.transform.DOScale(1, 0.5f).SetEase(Ease.OutBack);
                         }
                         SoundManager.instance.makeSoundEffect(5);
                     }
@@ -159,38 +164,44 @@ public class GameManager : MonoBehaviour
 
     private void locateShape()
     {
-        // update the times for new shape 
-        rightLeftClickCounter = Time.time;
-        pressingDownButtonCounter=Time.time;
-        rightLeftTurnCounter = Time.time;
+        if (currentShape)
+        {
+            // update the times for new shape 
+            rightLeftClickCounter = Time.time;
+            pressingDownButtonCounter=Time.time;
+            rightLeftTurnCounter = Time.time;
         
-        currentShape.upMovement();
-        boardManager.takeShapeInsideGrid(currentShape);
-        SoundManager.instance.makeSoundEffect(4);
-        if (spawnerManager)
-        {
-            currentShape = spawnerManager.createShape();
-        }
-        boardManager.deleleAllRows();
-        if (boardManager.completedLineCounter > 0)
-        {
-            scoreManager.rowScore(boardManager.completedLineCounter);
-            if (scoreManager.isPassedLevel)
-            {
-                SoundManager.instance.makeSoundEffect(6);
-                //decreasing movingDownTime depends on level. 
-                movingDownLevelCounter = movingDownTime - Mathf.Clamp(((float)scoreManager.level - 1) * 0.1f, 0.05f, 1f);
-            }
-            else
-            {
-                if (boardManager.completedLineCounter > 1)
-                {
-                    SoundManager.instance.makeVocalSound();
-                }
-            }
-            
+            currentShape.upMovement();
+            currentShape.makeLocateEffect();
+            boardManager.takeShapeInsideGrid(currentShape);
             SoundManager.instance.makeSoundEffect(4);
+            if (spawnerManager)
+            {
+                currentShape = spawnerManager.createShape();
+            }
+            StartCoroutine(boardManager.deleleAllRows());
+            if (boardManager.completedLineCounter > 0)
+            {
+                scoreManager.rowScore(boardManager.completedLineCounter);
+                if (scoreManager.isPassedLevel)
+                {
+                    SoundManager.instance.makeSoundEffect(6);
+                    //decreasing movingDownTime depends on level. 
+                    movingDownLevelCounter = movingDownTime - Mathf.Clamp(((float)scoreManager.level - 1) * 0.1f, 0.05f, 1f);
+                    StartCoroutine(levelUp());
+                }
+                else
+                {
+                    if (boardManager.completedLineCounter > 1)
+                    {
+                        SoundManager.instance.makeVocalSound();
+                    }
+                }
+            
+                SoundManager.instance.makeSoundEffect(4);
+            }
         }
+        
     }
 
     public void rotateIconDirection()
@@ -216,6 +227,18 @@ public class GameManager : MonoBehaviour
     Vector2 makeInteger(Vector2 vector)
     {
         return new Vector2(Mathf.Round(vector.x), Mathf.Round(vector.y));
+    }
+
+    IEnumerator levelUp()
+    {
+        yield return new WaitForSeconds(0.2f);
+        int counter = 0;
+        while (counter<levelUpEffects.Length)
+        {
+            levelUpEffects[counter].playEffect();
+            yield return new WaitForSeconds(0.1f);
+            counter++;
+        }
     }
     
 }

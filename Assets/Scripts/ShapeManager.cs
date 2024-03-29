@@ -1,14 +1,35 @@
-
 using UnityEngine;
 
 public class ShapeManager : MonoBehaviour
 {
    [SerializeField] private bool isRotatable = true;
-   
-  // private Vector3 originalPosition;
-  public Sprite shapeSprite;
-    
-   public void rightMovement()
+   public Sprite shapeSprite;
+   GameObject[] locateEffects;
+
+  private void Start()
+  {
+     locateEffects = GameObject.FindGameObjectsWithTag("LocateEffect");
+  }
+
+  public void makeLocateEffect()
+  {
+     int counter = 0;
+     foreach (Transform child in gameObject.transform)
+     {
+        if (locateEffects[counter])
+        {
+           locateEffects[counter].transform.position =
+              new Vector3(child.position.x, child.position.y, 0f);
+           ParticleEffectManager particleEffectManager = locateEffects[counter].GetComponent<ParticleEffectManager>();
+            if(particleEffectManager)
+            {
+               particleEffectManager.playEffect();
+            }
+        }
+        counter++;
+     }
+  }
+  public void rightMovement()
    {
       transform.Translate(Vector3.right,Space.World);
    }
