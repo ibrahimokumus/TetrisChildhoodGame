@@ -35,6 +35,7 @@ public class SoundManager : MonoBehaviour
     {
         if (isPlayEffect && index < soundEffects.Length)
         {
+            soundEffects[index].volume = PlayerPrefs.GetFloat("fxVolume");
             soundEffects[index].Stop();
             soundEffects[index].Play();
         }
@@ -53,6 +54,7 @@ public class SoundManager : MonoBehaviour
             return;
         }
 
+        musicSource.volume = PlayerPrefs.GetFloat("musicVolume");
         musicSource.clip = musicClip;
         musicSource.Play();
     }

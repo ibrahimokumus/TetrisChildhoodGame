@@ -1,5 +1,3 @@
-
-using System;
 using System.Collections;
 using DG.Tweening;
 using UnityEngine;
@@ -33,8 +31,18 @@ public class GameManager : MonoBehaviour
 
      public GameObject gameOverPanel;
      private ScoreManager scoreManager;
-
      public ParticleEffectManager[] levelUpEffects = new ParticleEffectManager[5];
+     
+     enum Direction{none,left,right,up,down}
+     private Direction suruklemeYonu = Direction.none;
+     private Direction suruklemeBitisYonu = Direction.none;
+
+     private float sonrakiDokunmaZamani;
+     private float sonrakiSuruklemeZamani;
+     [Range(0.05f, 1f)] public float minDokunmaZamani = 0.15f;
+     [Range(0.05f, 1f)] public float minSuruklemeZamani = 0.3f;
+
+     private bool dokunduMu = false;
      private void Awake()
      {
          spawnerManager = GameObject.FindObjectOfType<SpawnerManager>();
@@ -42,11 +50,20 @@ public class GameManager : MonoBehaviour
          scoreManager = GameObject.FindObjectOfType<ScoreManager>();
      }
 
-     private void Start()
+     private void OnEnable()
      {
-         startGame();
+         TouchManager.dragEvent += surukle;
+         TouchManager.swipeEvent += suruklemeBitti;
+         TouchManager.topEvent += tap;
      }
 
+     private void OnDisable()
+     {
+         TouchManager.dragEvent -= surukle;
+         TouchManager.swipeEvent -= suruklemeBitti;
+         TouchManager.topEvent -= tap;
+     }
+     
      public void startGame()
     {
         
@@ -80,86 +97,129 @@ public class GameManager : MonoBehaviour
     }
 
     private void enterControl()
-    {
+    {//pc controll inputs
         if (Input.GetKeyDown("right") || (Input.GetKey("right") && Time.time > rightLeftClickCounter))
         {
-            currentShape.rightMovement();
-            rightLeftClickCounter = Time.time + rightLeftClickTime;
-            if (!boardManager.validPosition(currentShape))
-            {
-                SoundManager.instance.makeSoundEffect(1);
-                currentShape.leftMovement();
-            }
-            else
-            {
-                SoundManager.instance.makeSoundEffect(2);
-            }
-            
+            righMovementFNC();
         }else if (Input.GetKeyDown("left") || (Input.GetKey("left") && Time.time > rightLeftClickCounter))
         {
-            currentShape.leftMovement();
-            rightLeftClickCounter = Time.time + rightLeftClickTime;
-            if (!boardManager.validPosition(currentShape))
-            {
-                SoundManager.instance.makeSoundEffect(1);
-                currentShape.rightMovement();
-            }
-            else
-            {
-                SoundManager.instance.makeSoundEffect(2);
-            }
-            
+            leftMovementFNC();
         }else if (Input.GetKey("up") && Time.time > rightLeftTurnCounter)
         {
-            currentShape.rightRotation();
-            rightLeftTurnCounter = Time.time + rightLeftTurnTime;
-            if (!boardManager.validPosition(currentShape))
-            {
-                SoundManager.instance.makeSoundEffect(1);
-                currentShape.leftMovement();
-            }
-            else
-            {
-                isRightDirection = !isRightDirection;
-                if (rotateIcon)
-                {
-                    rotateIcon.chooseIcon(isRightDirection);
-                }
-                SoundManager.instance.makeSoundEffect(2);
-            }
-            
+            turnRightLeftFNC();
         }else if ((Input.GetKey("down") && Time.time > pressingDownButtonCounter) || Time.time>movingDownCounter)
         {
-            movingDownCounter = Time.time + movingDownLevelCounter;
-            pressingDownButtonCounter = Time.time + pressingDownButtonTime; 
-            if (currentShape)
-            {
-                currentShape.downMovement();
+            downFasterFNC();
+        }//android controll inputs
+        else if ((suruklemeBitisYonu==Direction.right && Time.time>sonrakiSuruklemeZamani)||(suruklemeYonu==Direction.right && Time.time>sonrakiDokunmaZamani))
+        {
+            righMovementFNC();
+            sonrakiDokunmaZamani = Time.time + minDokunmaZamani;
+            sonrakiSuruklemeZamani = Time.time + minSuruklemeZamani;
+            
+            //suruklemeYonu = Direction.none;
+            //suruklemeBitisYonu = Direction.none;
+        }else if ((suruklemeBitisYonu==Direction.left && Time.time>sonrakiSuruklemeZamani)||(suruklemeYonu==Direction.left&&Time.time>sonrakiDokunmaZamani))
+        {
+            leftMovementFNC();
+           // suruklemeYonu = Direction.none;
+           // suruklemeBitisYonu = Direction.none;
+        }else if ((suruklemeBitisYonu == Direction.up && Time.time > sonrakiSuruklemeZamani)||(dokunduMu))
+        {
+            turnRightLeftFNC();
+            sonrakiSuruklemeZamani = Time.time + minSuruklemeZamani;
+            //suruklemeBitisYonu = Direction.none;
+        }else if (suruklemeYonu==Direction.down&& Time.time>sonrakiDokunmaZamani)
+        {
+            downFasterFNC();
+           // suruklemeYonu = Direction.none;
+        }
 
-                if (!boardManager.validPosition(currentShape))
+        suruklemeYonu = Direction.none;
+        suruklemeBitisYonu = Direction.none;
+        dokunduMu = false;
+    }
+
+    private void downFasterFNC()
+    {
+        movingDownCounter = Time.time + movingDownLevelCounter;
+        pressingDownButtonCounter = Time.time + pressingDownButtonTime;
+        if (currentShape)
+        {
+            currentShape.downMovement();
+
+            if (!boardManager.validPosition(currentShape))
+            {
+                if (boardManager.outFromScene(currentShape))
                 {
-                    if (boardManager.outFromScene(currentShape))
+                    currentShape.upMovement();
+                    isGameOver = true;
+                    if (gameOverPanel)
                     {
-                        currentShape.upMovement();
-                        isGameOver = true;
-                        if (gameOverPanel)
-                        {
-                            gameOverPanel.transform.localScale=Vector3.zero;
-                            gameOverPanel.SetActive(true);
-                            gameOverPanel.transform.DOScale(1, 0.5f).SetEase(Ease.OutBack);
-                        }
-                        SoundManager.instance.makeSoundEffect(5);
+                        gameOverPanel.transform.localScale = Vector3.zero;
+                        gameOverPanel.SetActive(true);
+                        gameOverPanel.transform.DOScale(1, 0.5f).SetEase(Ease.OutBack);
                     }
-                    else
-                    {
-                        locateShape();
-                    }
-                   
+
+                    SoundManager.instance.makeSoundEffect(5);
+                }
+                else
+                {
+                    locateShape();
                 }
             }
-            
         }
-        
+    }
+
+    private void turnRightLeftFNC()
+    {
+        currentShape.rightRotation();
+        rightLeftTurnCounter = Time.time + rightLeftTurnTime;
+        if (!boardManager.validPosition(currentShape))
+        {
+            SoundManager.instance.makeSoundEffect(1);
+            currentShape.leftMovement();
+        }
+        else
+        {
+            isRightDirection = !isRightDirection;
+            if (rotateIcon)
+            {
+                rotateIcon.chooseIcon(isRightDirection);
+            }
+
+            SoundManager.instance.makeSoundEffect(2);
+        }
+    }
+
+    private void leftMovementFNC()
+    {
+        currentShape.leftMovement();
+        rightLeftClickCounter = Time.time + rightLeftClickTime;
+        if (!boardManager.validPosition(currentShape))
+        {
+            SoundManager.instance.makeSoundEffect(1);
+            currentShape.rightMovement();
+        }
+        else
+        {
+            SoundManager.instance.makeSoundEffect(2);
+        }
+    }
+
+    private void righMovementFNC()
+    {
+        currentShape.rightMovement();
+        rightLeftClickCounter = Time.time + rightLeftClickTime;
+        if (!boardManager.validPosition(currentShape))
+        {
+            SoundManager.instance.makeSoundEffect(1);
+            currentShape.leftMovement();
+        }
+        else
+        {
+            SoundManager.instance.makeSoundEffect(2);
+        }
     }
 
     private void locateShape()
@@ -240,5 +300,34 @@ public class GameManager : MonoBehaviour
             counter++;
         }
     }
-    
+
+    void surukle(Vector2 suruklemeHareketi)
+    {
+        suruklemeYonu = detectDirection(suruklemeHareketi);
+    }
+
+    private void suruklemeBitti(Vector2 hareket)
+    {
+        suruklemeBitisYonu = detectDirection(hareket);
+    }
+
+    Direction detectDirection(Vector2 surukleme)
+    {
+        Direction suruklemeYonu = Direction.none;
+        if (Mathf.Abs(surukleme.x)>Mathf.Abs(surukleme.y))
+        {
+            suruklemeYonu = (surukleme.x >= 0) ? Direction.right : Direction.left;
+        }
+        else
+        {
+            suruklemeYonu = (surukleme.y > 0) ? Direction.up : Direction.down;
+        }
+
+        return suruklemeYonu;
+    }
+
+    void tap(Vector2 surukleme)
+    {
+        dokunduMu = true;
+    }
 }
